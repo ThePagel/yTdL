@@ -1,11 +1,10 @@
 from flask import Flask, render_template, redirect, url_for, flash, request
-from flask_sqlalchemy import SQLAlchemy
+from flask_sqlAlchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_bcrypt import Bcrypt
-from flask_wtf import FlaskForm, CSRFProtect  # Import CSRFProtect
+from flask_wtf import FlaskForm, CSRFProtect
 import requests
 
-# Initialize the app and its components
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
@@ -15,7 +14,6 @@ bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
-# Define the User model
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(150), unique=True, nullable=False)
@@ -26,15 +24,12 @@ class User(db.Model, UserMixin):
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-# Define forms
 class SimpleForm(FlaskForm):
     pass
 
-# Utility function for formatting inputs
 def format_input(text):
     return text.replace(' ', '').title()
 
-# Fetch top tracks for a given artist
 def fetch_top_tracks(artist):
     LASTFM_API_KEY = '1983ea74946115c4fa607ff051dede83'
     url = f'http://ws.audioscrobbler.com/2.0/?method=artist.gettoptracks&artist={format_input(artist)}&api_key={LASTFM_API_KEY}&format=json'
@@ -43,7 +38,6 @@ def fetch_top_tracks(artist):
         return [track['name'] for track in response.json()['toptracks']['track']]
     return []
 
-# Fetch similar songs or artists
 def get_similar_songs(song=None, artist=None):
     LASTFM_API_KEY = '1983ea74946115c4fa607ff051dede83'
     url = f"http://ws.audioscrobbler.com/2.0/?method={'track.getsimilar' if song else 'artist.getsimilar'}&{'track='+format_input(song)+'&' if song else ''}artist={format_input(artist)}&api_key={LASTFM_API_KEY}&format=json"
@@ -54,12 +48,18 @@ def get_similar_songs(song=None, artist=None):
         return [item['name'] for item in data.get(key, {}).get('track' if song else 'artist', [])]
     return []
 
-# Route for home page
+def fetch_artist_suggestions(query):
+    LASTFM_API_KEY = '1983ea74946115c4fa607ff051dede83'
+    url = f'http://ws.audioscrobbler.com/2.0/?method=artist.search&artist={query}&api_key={LASTFM_API_KEY}&format=json'
+    response = requests.get(url)
+    if response.status_code == 200 and 'artistmatches' in response.json()['results']:
+        return [artist['name'] for artist in response.json()['results']['artistmatches']['artist']]
+    return []
+
 @app.route('/')
 def index():
     return redirect(url_for('login') if User.query.filter_by(admin=True).first() else url_for('setup'))
 
-# Route for login page
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = SimpleForm()
@@ -71,7 +71,6 @@ def login():
         flash('Login failed. Check your username and password.')
     return render_template('login.html', form=form)
 
-# Route for setup page
 @app.route('/setup', methods=['GET', 'POST'])
 def setup():
     form = SimpleForm()
@@ -85,7 +84,6 @@ def setup():
         return redirect(url_for('login'))
     return render_template('setup.html', form=form)
 
-# Route for signing up a new user
 @app.route('/signup', methods=['GET', 'POST'])
 @login_required
 def signup():
@@ -101,26 +99,22 @@ def signup():
         return redirect(url_for('dashboard'))
     return render_template('signup.html', form=form)
 
-# Route for logging out
 @app.route('/logout')
 @login_required
 def logout():
     logout_user()
     return redirect(url_for('login'))
 
-# Route for dashboard
 @app.route('/dashboard')
 @login_required
 def dashboard():
     return render_template('dashboard.html', form=SimpleForm())
 
-# Route for user management
 @app.route('/user_management')
 @login_required
 def user_management():
     return render_template('user_management.html', users=User.query.all(), form=SimpleForm()) if current_user.admin else (flash('Access denied. Admins only.'), redirect(url_for('dashboard')))
 
-# Route for editing a user
 @app.route('/edit_user/<int:user_id>', methods=['GET', 'POST'])
 @login_required
 def edit_user(user_id):
@@ -137,7 +131,6 @@ def edit_user(user_id):
         return redirect(url_for('user_management'))
     return render_template('edit_user.html', user=user, form=form)
 
-# Route for deleting a user
 @app.route('/delete_user/<int:user_id>', methods=['POST'])
 @login_required
 def delete_user(user_id):
@@ -153,7 +146,6 @@ def delete_user(user_id):
         flash('User deleted successfully.')
     return redirect(url_for('user_management'))
 
-# Route for profile page
 @app.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
@@ -164,7 +156,6 @@ def profile():
         flash('Profile updated successfully.')
     return render_template('profile.html', form=form)
 
-# Route for resetting password
 @app.route('/reset_password', methods=['GET', 'POST'])
 @login_required
 def reset_password():
@@ -178,7 +169,6 @@ def reset_password():
             flash('Current password is incorrect.')
     return render_template('reset_password.html', form=form)
 
-# Route for creating a playlist
 @app.route('/create_playlist', methods=['POST'])
 @login_required
 def create_playlist():
@@ -191,10 +181,14 @@ def create_playlist():
     flash('CSRF token is missing or incorrect.')
     return redirect(url_for('dashboard'))
 
-# Route to get songs for an artist
 @app.route('/get_songs', methods=['GET'])
 def get_songs():
     return {'songs': fetch_top_tracks(request.args.get('artist'))}
+
+@app.route('/get_artists', methods=['GET'])
+def get_artists():
+    query = request.args.get('query')
+    return {'artists': fetch_artist_suggestions(query)}
 
 if __name__ == '__main__':
     with app.app_context():
