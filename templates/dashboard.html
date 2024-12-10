@@ -15,8 +15,7 @@
     {{ form.hidden_tag() }}
     <div class="form-group">
         <label for="artist">Enter the artist name:</label>
-        <input type="text" id="artist" name="artist" onkeyup="fetchArtists()" autocomplete="off">
-        <div id="artist-suggestions" class="autocomplete-items"></div>
+        <input type="text" id="artist" name="artist" onkeyup="fetchSongs()">
     </div>
     <div class="form-group">
         <label for="song">Select a song:</label>
@@ -30,77 +29,22 @@
 </form>
 
 <script>
-function fetchArtists() {
-    const query = document.getElementById('artist').value;
-    if (query.length > 2) {
-        fetch(`/get_artists?query=${query}`)
-            .then(response => response.json())
-            .then(data => {
-                const artistSuggestions = document.getElementById('artist-suggestions');
-                artistSuggestions.innerHTML = '';
-                data.artists.forEach(artist => {
-                    const div = document.createElement('div');
-                    div.textContent = artist;
-                    div.onclick = function() {
-                        document.getElementById('artist').value = artist;
-                        artistSuggestions.innerHTML = '';
-                        fetchSongs();  // Fetch songs when an artist is selected
-                    };
-                    artistSuggestions.appendChild(div);
-                });
-            });
-    }
-}
-
 function fetchSongs() {
     const artist = document.getElementById('artist').value;
-    if (artist.length > 2) {
+    if (artist.length > 2) {  // Start searching when the artist name is more than 2 characters
         fetch(`/get_songs?artist=${artist}`)
             .then(response => response.json())
             .then(data => {
                 const songSelect = document.getElementById('song');
                 songSelect.innerHTML = '<option value="">--Select a song--</option>';
-                if (data.songs.length > 0) {
-                    data.songs.forEach(song => {
-                        const option = document.createElement('option');
-                        option.value = song;
-                        option.textContent = song;
-                        songSelect.appendChild(option);
-                    });
-                } else {
-                    songSelect.innerHTML = '<option value="">No songs found</option>';
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching songs:', error);
-                const songSelect = document.getElementById('song');
-                songSelect.innerHTML = '<option value="">Error fetching songs</option>';
+                data.songs.forEach(song => {
+                    const option = document.createElement('option');
+                    option.value = song;
+                    option.textContent = song;
+                    songSelect.appendChild(option);
+                });
             });
     }
 }
 </script>
-
-<style>
-.autocomplete-items {
-    border: 1px solid #d4d4d4;
-    border-bottom: none;
-    border-top: none;
-    z-index: 99;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-}
-
-.autocomplete-items div {
-    padding: 10px;
-    cursor: pointer;
-    background-color: #fff;
-    border-bottom: 1px solid #d4d4d4;
-}
-
-.autocomplete-items div:hover {
-    background-color: #e9e9e9;
-}
-</style>
 {% endblock %}
