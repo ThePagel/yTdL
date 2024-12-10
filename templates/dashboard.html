@@ -44,7 +44,7 @@ function fetchArtists() {
                     div.onclick = function() {
                         document.getElementById('artist').value = artist;
                         artistSuggestions.innerHTML = '';
-                        fetchSongs();
+                        fetchSongs();  // Fetch songs when an artist is selected
                     };
                     artistSuggestions.appendChild(div);
                 });
@@ -60,12 +60,21 @@ function fetchSongs() {
             .then(data => {
                 const songSelect = document.getElementById('song');
                 songSelect.innerHTML = '<option value="">--Select a song--</option>';
-                data.songs.forEach(song => {
-                    const option = document.createElement('option');
-                    option.value = song;
-                    option.textContent = song;
-                    songSelect.appendChild(option);
-                });
+                if (data.songs.length > 0) {
+                    data.songs.forEach(song => {
+                        const option = document.createElement('option');
+                        option.value = song;
+                        option.textContent = song;
+                        songSelect.appendChild(option);
+                    });
+                } else {
+                    songSelect.innerHTML = '<option value="">No songs found</option>';
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching songs:', error);
+                const songSelect = document.getElementById('song');
+                songSelect.innerHTML = '<option value="">Error fetching songs</option>';
             });
     }
 }
