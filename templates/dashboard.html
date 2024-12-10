@@ -4,7 +4,7 @@
 
 {% block content %}
 <h2>Welcome to the Dashboard</h2>
-<ul>
+<ul class="vertical-list">
     <li><a href="{{ url_for('user_management') }}">User Management</a></li>
     <li><a href="{{ url_for('profile') }}">Profile</a></li>
     <li><a href="{{ url_for('logout') }}">Logout</a></li>
@@ -47,4 +47,16 @@ function fetchSongs() {
     }
 }
 </script>
+
+<style>
+.vertical-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+.vertical-list li {
+    margin-bottom: 10px;
+}
+</style>
+
 {% endblock %}
