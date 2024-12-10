@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Playlist Generator</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h2>Playlist Generator</h2>
+    <form method="POST" action="{{ url_for('playlist.playlist_generator') }}">
+        <label for="prompt">Enter your preferences:</label>
+        <input type="text" id="prompt" name="prompt" required>
+        <button type="submit">Generate Playlist</button>
+    </form>
+    {% if playlist %}
+    <h3>Generated Playlist:</h3>
+    <p>{{ playlist }}</p>
+    {% endif %}
+</body>
+</html>
