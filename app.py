@@ -39,7 +39,7 @@ def index():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = SimpleForm()
-    if request.method == 'POST' and form.validate_on_submit():
+    if form.validate_on_submit():
         username = request.form.get('username')
         password = request.form.get('password')
         user = User.query.filter_by(username=username).first()
@@ -56,7 +56,7 @@ def setup():
     form = SimpleForm()
     if User.query.filter_by(admin=True).first():
         return redirect(url_for('login'))
-    if request.method == 'POST' and form.validate_on_submit():
+    if form.validate_on_submit():
         username = request.form.get('username')
         password = request.form.get('password')
         hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
@@ -72,7 +72,7 @@ def setup():
 def signup():
     form = SimpleForm()
     if current_user.admin:  # Only admin can create new users
-        if request.method == 'POST' and form.validate_on_submit():
+        if form.validate_on_submit():
             username = request.form.get('username')
             password = request.form.get('password')
             admin = True if request.form.get('admin') == 'on' else False
@@ -115,7 +115,7 @@ def edit_user(user_id):
     form = SimpleForm()
     if current_user.admin:
         user = User.query.get_or_404(user_id)
-        if request.method == 'POST' and form.validate_on_submit():
+        if form.validate_on_submit():
             user.username = request.form['username']
             user.admin = True if request.form.get('admin') == 'on' else False
             db.session.commit()
@@ -148,7 +148,7 @@ def delete_user(user_id):
 @login_required
 def profile():
     form = SimpleForm()
-    if request.method == 'POST' and form.validate_on_submit():
+    if form.validate_on_submit():
         current_user.username = request.form['username']
         db.session.commit()
         flash('Profile updated successfully.')
@@ -158,7 +158,7 @@ def profile():
 @login_required
 def reset_password():
     form = SimpleForm()
-    if request.method == 'POST' and form.validate_on_submit():
+    if form.validate_on_submit():
         current_password = request.form['current_password']
         new_password = request.form['new_password']
         if bcrypt.check_password_hash(current_user.password, current_password):
@@ -174,10 +174,14 @@ def reset_password():
 @app.route('/create_playlist', methods=['POST'])
 @login_required
 def create_playlist():
-    song = request.form.get('song')
-    # Call the function to get similar songs
-    similar_songs = get_similar_songs(song)
-    return render_template('playlist.html', songs=similar_songs)
+    form = SimpleForm()
+    if form.validate_on_submit():
+        song = request.form.get('song')
+        # Call the function to get similar songs
+        similar_songs = get_similar_songs(song)
+        return render_template('playlist.html', songs=similar_songs)
+    flash('CSRF token is missing or incorrect.')
+    return redirect(url_for('dashboard'))
 
 def get_similar_songs(song):
     # Using the Last.fm API to fetch similar songs
