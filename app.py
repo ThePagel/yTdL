@@ -54,6 +54,15 @@ def get_similar_songs(song=None, artist=None):
         return [item['name'] for item in data.get(key, {}).get('track' if song else 'artist', [])]
     return []
 
+# Fetch artist suggestions
+def fetch_artist_suggestions(query):
+    LASTFM_API_KEY = '1983ea74946115c4fa607ff051dede83'
+    url = f'http://ws.audioscrobbler.com/2.0/?method=artist.search&artist={query}&api_key={LASTFM_API_KEY}&format=json'
+    response = requests.get(url)
+    if response.status_code == 200 and 'artistmatches' in response.json()['results']:
+        return [artist['name'] for artist in response.json()['results']['artistmatches']['artist']]
+    return []
+
 # Route for home page
 @app.route('/')
 def index():
@@ -195,6 +204,12 @@ def create_playlist():
 @app.route('/get_songs', methods=['GET'])
 def get_songs():
     return {'songs': fetch_top_tracks(request.args.get('artist'))}
+
+# Route to get artist suggestions
+@app.route('/get_artists', methods=['GET'])
+def get_artists():
+    query = request.args.get('query')
+    return {'artists': fetch_artist_suggestions(query)}
 
 if __name__ == '__main__':
     with app.app_context():
