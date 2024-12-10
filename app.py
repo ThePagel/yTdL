@@ -110,7 +110,7 @@ def user_management():
         flash('Access denied. Admins only.')
         return redirect(url_for('dashboard'))
 
-@app.route('/edit_user/<int:user_id>', methods=['GET', 'POST'])
+@app.route('/edit_user/<int=user_id>', methods=['GET', 'POST'])
 @login_required
 def edit_user(user_id):
     form = SimpleForm()
@@ -127,7 +127,7 @@ def edit_user(user_id):
         flash('Access denied. Admins only.')
         return redirect(url_for('dashboard'))
 
-@app.route('/delete_user/<int:user_id>', methods=['POST'])
+@app.route('/delete_user/<int=user_id>', methods=['POST'])
 @login_required
 def delete_user(user_id):
     form = SimpleForm()
@@ -188,11 +188,12 @@ def create_playlist():
 
 def get_similar_songs(song):
     # Using the Last.fm API to fetch similar songs
-    LASTFM_API_KEY = 'b4ad3493ab88123ef98a917012e326cb'
+    LASTFM_API_KEY = '1983ea74946115c4fa607ff051dede83'
     url = f'http://ws.audioscrobbler.com/2.0/?method=track.getsimilar&track={song}&api_key={LASTFM_API_KEY}&format=json'
     response = requests.get(url)
     if response.status_code == 200:
         data = response.json()
+        app.logger.info(f'API Response: {data}')  # Log the API response for debugging
         if 'similartracks' in data:
             similar_songs = data['similartracks']['track']
             return [track['name'] for track in similar_songs]
