@@ -1,12 +1,16 @@
-from flask import Flask, render_template, redirect, url_for, flash, request, session
+from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_bcrypt import Bcrypt
 from flask_wtf import CSRFProtect, FlaskForm
+import playlist_generator
 
+# Initialize Flask application
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
+
+# Initialize extensions
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
@@ -47,7 +51,6 @@ def login():
             return redirect(url_for('dashboard'))
         else:
             flash('Login failed. Check your username and password.')
-            app.logger.info(f'Failed login attempt for user: {username}')
     return render_template('login.html', form=form)
 
 @app.route('/setup', methods=['GET', 'POST'])
@@ -92,10 +95,15 @@ def logout():
     logout_user()
     return redirect(url_for('login'))
 
-@app.route('/dashboard')
+@app.route('/dashboard', methods=['GET', 'POST'])
 @login_required
 def dashboard():
-    return render_template('dashboard.html')
+    playlist = None
+    if request.method == 'POST':
+        genre = request.form.get('genre')
+        mood = request.form.get('mood')
+        playlist = playlist_generator.generate_playlist(genre, mood)
+    return render_template('dashboard.html', playlist=playlist)
 
 @app.route('/user_management')
 @login_required
