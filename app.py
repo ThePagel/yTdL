@@ -180,6 +180,8 @@ def create_playlist():
         song = request.form.get('song')
         # Call the function to get similar songs
         similar_songs = get_similar_songs(song)
+        if not similar_songs:
+            flash('No similar songs found or there was an error with the API.')
         return render_template('playlist.html', songs=similar_songs)
     flash('CSRF token is missing or incorrect.')
     return redirect(url_for('dashboard'))
@@ -191,9 +193,15 @@ def get_similar_songs(song):
     response = requests.get(url)
     if response.status_code == 200:
         data = response.json()
-        similar_songs = data['similartracks']['track']
-        return [track['name'] for track in similar_songs]
-    return []
+        if 'similartracks' in data:
+            similar_songs = data['similartracks']['track']
+            return [track['name'] for track in similar_songs]
+        else:
+            app.logger.error(f'KeyError: "similartracks" not found in response for song: {song}')
+            return []
+    else:
+        app.logger.error(f'Error fetching similar songs: {response.status_code}')
+        return []
 
 if __name__ == '__main__':
     with app.app_context():
