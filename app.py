@@ -110,7 +110,7 @@ def user_management():
         flash('Access denied. Admins only.')
         return redirect(url_for('dashboard'))
 
-@app.route('/edit_user/<int=user_id>', methods=['GET', 'POST'])
+@app.route('/edit_user/<int:user_id>', methods=['GET', 'POST'])
 @login_required
 def edit_user(user_id):
     form = SimpleForm()
@@ -127,7 +127,7 @@ def edit_user(user_id):
         flash('Access denied. Admins only.')
         return redirect(url_for('dashboard'))
 
-@app.route('/delete_user/<int=user_id>', methods=['POST'])
+@app.route('/delete_user/<int:user_id>', methods=['POST'])
 @login_required
 def delete_user(user_id):
     form = SimpleForm()
