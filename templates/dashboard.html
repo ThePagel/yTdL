@@ -24,4 +24,27 @@
         </select>
     </div>
     <div class="form-group">
-        <button type="submit">Create Playlist</
+        <button type="submit">Create Playlist</button>
+    </div>
+</form>
+
+<script>
+function fetchSongs() {
+    const artist = document.getElementById('artist').value;
+    if (artist.length > 2) {  // Start searching when the artist name is more than 2 characters
+        fetch(`/get_songs?artist=${artist}`)
+            .then(response => response.json())
+            .then(data => {
+                const songSelect = document.getElementById('song');
+                songSelect.innerHTML = '<option value="">--Select a song--</option>';
+                data.songs.forEach(song => {
+                    const option = document.createElement('option');
+                    option.value = song;
+                    option.textContent = song;
+                    songSelect.appendChild(option);
+                });
+            });
+    }
+}
+</script>
+{% endblock %}
