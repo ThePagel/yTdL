@@ -1,5 +1,5 @@
 from flask import Flask, render_template, redirect, url_for, flash, request, session
-from flask_sqlalchemy import SQLAlchemy  # Correct module name with lowercase "a"
+from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_bcrypt import Bcrypt
 from flask_wtf import CSRFProtect, FlaskForm
@@ -201,7 +201,16 @@ def get_similar_songs(song):
         else:
             app.logger.error(f'KeyError: "similartracks" not found in response for song: {song}')
             app.logger.error(f'Full Response: {data}')
-            return []
+            # Fallback: Test with a known song
+            fallback_url = f'http://ws.audioscrobbler.com/2.0/?method=track.getsimilar&track=Bohemian+Rhapsody&artist=Queen&api_key={LASTFM_API_KEY}&format=json'
+            fallback_response = requests.get(fallback_url)
+            fallback_data = fallback_response.json()
+            if 'similartracks' in fallback_data:
+                fallback_songs = fallback_data['similartracks']['track']
+                app.logger.info(f'Fallback Response: {fallback_data}')
+                return [track['name'] for track in fallback_songs]
+            else:
+                return []
     else:
         app.logger.error(f'Error fetching similar songs: {response.status_code}')
         app.logger.error(f'Full Response: {response.text}')
