@@ -6,7 +6,7 @@ from flask_wtf import CSRFProtect, FlaskForm
 
 # Initialize Flask application
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'your_secret_key'
+app.config['SECRET_KEY'] = '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'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 
 # Initialize extensions
