@@ -181,7 +181,7 @@ def create_playlist():
         # Call the function to get similar songs
         similar_songs = get_similar_songs(song)
         if not similar_songs:
-            flash('No similar songs found or there was an error with the API.')
+            flash('No similar songs found or there was an error with the API. Please try a different song.')
         return render_template('playlist.html', songs=similar_songs)
     flash('CSRF token is missing or incorrect.')
     return redirect(url_for('dashboard'))
