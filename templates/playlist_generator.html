@@ -10,9 +10,9 @@
     <h2>Playlist Generator</h2>
     <form method="POST" action="{{ url_for('playlist.playlist_generator') }}">
         {{ form.hidden_tag() }}
-        <label for="prompt">Enter your preferences:</label>
-        <input type="text" id="prompt" name="prompt" required>
-        <button type="submit">Generate Playlist</button>
+        <label for="prompt">{{ form.prompt.label }}</label>
+        {{ form.prompt(size=80) }}
+        {{ form.submit() }}
     </form>
     {% if playlist %}
     <h3>Generated Playlist:</h3>
