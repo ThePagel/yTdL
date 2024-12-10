@@ -3,13 +3,11 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_bcrypt import Bcrypt
 from flask_wtf import CSRFProtect, FlaskForm
+import requests
 
-# Initialize Flask application
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
-
-# Initialize extensions
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
@@ -173,9 +171,24 @@ def reset_password():
             app.logger.warning(f'Failed password reset attempt for user: {current_user.username}')
     return render_template('reset_password.html', form=form)
 
-# Register Blueprints
-from playlist_generator import playlist_bp
-app.register_blueprint(playlist_bp, url_prefix='/playlist')
+@app.route('/create_playlist', methods=['POST'])
+@login_required
+def create_playlist():
+    song = request.form.get('song')
+    # Call the function to get similar songs
+    similar_songs = get_similar_songs(song)
+    return render_template('playlist.html', songs=similar_songs)
+
+def get_similar_songs(song):
+    # Using the Last.fm API to fetch similar songs
+    LASTFM_API_KEY = 'b4ad3493ab88123ef98a917012e326cb'
+    url = f'http://ws.audioscrobbler.com/2.0/?method=track.getsimilar&track={song}&api_key={LASTFM_API_KEY}&format=json'
+    response = requests.get(url)
+    if response.status_code == 200:
+        data = response.json()
+        similar_songs = data['similartracks']['track']
+        return [track['name'] for track in similar_songs]
+    return []
 
 if __name__ == '__main__':
     with app.app_context():
