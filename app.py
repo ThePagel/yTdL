@@ -96,7 +96,8 @@ def logout():
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    return render_template('dashboard.html')
+    form = SimpleForm()
+    return render_template('dashboard.html', form=form)
 
 @app.route('/user_management')
 @login_required
