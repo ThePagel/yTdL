@@ -1,5 +1,5 @@
 from flask import Flask, render_template, redirect, url_for, flash, request, session
-from flask_sqlalchemy import SQLAlchemy
+from flask_sqlAlchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_bcrypt import Bcrypt
 from flask_wtf import CSRFProtect, FlaskForm
@@ -187,10 +187,11 @@ def create_playlist():
     return redirect(url_for('dashboard'))
 
 def get_similar_songs(song):
-    # Using the Last.fm API to fetch similar songs
     LASTFM_API_KEY = '1983ea74946115c4fa607ff051dede83'
     url = f'http://ws.audioscrobbler.com/2.0/?method=track.getsimilar&track={song}&api_key={LASTFM_API_KEY}&format=json'
     response = requests.get(url)
+    
+    app.logger.info(f'Request URL: {url}')  # Log the request URL for debugging
     if response.status_code == 200:
         data = response.json()
         app.logger.info(f'API Response: {data}')  # Log the API response for debugging
@@ -199,9 +200,11 @@ def get_similar_songs(song):
             return [track['name'] for track in similar_songs]
         else:
             app.logger.error(f'KeyError: "similartracks" not found in response for song: {song}')
+            app.logger.error(f'Full Response: {data}')
             return []
     else:
         app.logger.error(f'Error fetching similar songs: {response.status_code}')
+        app.logger.error(f'Full Response: {response.text}')
         return []
 
 if __name__ == '__main__':
