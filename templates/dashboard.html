@@ -1,12 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
+{% extends "layout.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
     <h2>Welcome to the Dashboard</h2>
     <ul>
         <li><a href="{{ url_for('user_management') }}">User Management</a></li>
@@ -16,6 +12,7 @@
 
     <h3>Create a Playlist</h3>
     <form method="POST" action="{{ url_for('create_playlist') }}">
+        {{ form.hidden_tag() }}
         <div class="form-group">
             <label for="song">Enter a song or artist:</label>
             <input type="text" id="song" name="song" required>
@@ -24,5 +21,4 @@
             <button type="submit">Create Playlist</button>
         </div>
     </form>
-</body>
-</html>
+{% endblock %}
