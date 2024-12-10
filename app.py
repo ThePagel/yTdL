@@ -1,5 +1,5 @@
 from flask import Flask, render_template, redirect, url_for, flash, request, session
-from flask_sqlAlchemy import SQLAlchemy
+from flask_sqlalchemy import SQLAlchemy  # Correct module name with lowercase "a"
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_bcrypt import Bcrypt
 from flask_wtf import CSRFProtect, FlaskForm
