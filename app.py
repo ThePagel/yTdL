@@ -16,7 +16,7 @@ login_manager.login_view = 'login'
 
 # User model
 class User(db.Model, UserMixin):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary key=True)
     username = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(150), nullable=False)
     admin = db.Column(db.Boolean, default=False)
@@ -50,7 +50,6 @@ def login():
             flash('Login failed. Check your username and password.')
             app.logger.info(f'Failed login attempt for user: {username}')
     return render_template('login.html', form=form)
-
 @app.route('/setup', methods=['GET', 'POST'])
 def setup():
     form = SimpleForm()
@@ -126,7 +125,6 @@ def edit_user(user_id):
     else:
         flash('Access denied. Admins only.')
         return redirect(url_for('dashboard'))
-
 @app.route('/delete_user/<int:user_id>', methods=['POST'])
 @login_required
 def delete_user(user_id):
@@ -212,4 +210,24 @@ def get_similar_songs(song=None, artist=None):
     
     app.logger.info(f'Request URL: {url}')  # Log the request URL for debugging
     if response.status_code == 200:
-        data = response
+        data = response.json()
+        app.logger.info(f'API Response: {data}')  # Log the API response for debugging
+        if song and 'similartracks' in data:
+            similar_songs = data['similartracks']['track']
+            return [track['name'] for track in similar_songs]
+        elif artist and 'similarartists' in data:
+            similar_artists = data['similarartists']['artist']
+            return [artist['name'] for artist in similar_artists]
+        else:
+            app.logger.error(f'KeyError: "similartracks" or "similarartists" not found in response')
+            app.logger.error(f'Full Response: {data}')
+            return []
+    else:
+        app.logger.error(f'Error fetching similar songs: {response.status_code}')
+        app.logger.error(f'Full Response: {response.text}')
+        return []
+
+if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
+    app.run(debug=True, host='0.0.0.0')
