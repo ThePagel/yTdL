@@ -21,7 +21,7 @@ from playlist_generator import playlist_bp
 app.register_blueprint(playlist_bp)
 
 # Import routes and models
-import main_routes  # Assuming your existing routes are in main_routes.py
+import main_routes
 
 if __name__ == '__main__':
     with app.app_context():
