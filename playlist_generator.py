@@ -1,18 +1,20 @@
+from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask_login import login_required
 import openai
 
-# Initialize OpenAI API key
-openai.api_key = 'your_openai_api_key'
+playlist_bp = Blueprint('playlist', __name__)
 
-def generate_playlist(genre, mood):
-    prompt = f"Create a playlist of 10 songs for a {mood} mood in the {genre} genre."
-    
-    response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        messages=[
-            {"role": "system", "content": "You are a helpful assistant that creates music playlists."},
-            {"role": "user", "content": prompt}
-        ]
-    )
-    
-    playlist = response.choices[0].message['content']
-    return playlist
+@playlist_bp.route('/playlist_generator', methods=['GET', 'POST'])
+@login_required
+def playlist_generator():
+    if request.method == 'POST':
+        prompt = request.form.get('prompt')
+        openai.api_key = 'your_openai_api_key'
+        response = openai.Completion.create(
+            engine="text-davinci-003",
+            prompt=prompt,
+            max_tokens=150
+        )
+        playlist = response.choices[0].text.strip()
+        return render_template('playlist_generator.html', playlist=playlist)
+    return render_template('playlist_generator.html')
