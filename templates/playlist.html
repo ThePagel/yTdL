@@ -3,11 +3,23 @@
 {% block title %}Playlist{% endblock %}
 
 {% block content %}
-    <h2>Playlist</h2>
-    <ul>
-        {% for song in songs %}
-            <li>{{ song }}</li>
-        {% endfor %}
-    </ul>
-    <a href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+<h2>Your Playlist</h2>
+<ul class="vertical-list">
+    {% for song in songs %}
+    <li>{{ song }}</li>
+    {% endfor %}
+</ul>
+<a href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+
+<style>
+.vertical-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+.vertical-list li {
+    margin-bottom: 10px;
+}
+</style>
+
 {% endblock %}
